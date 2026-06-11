@@ -12,7 +12,7 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
-    "deploy:cf": "pnpm build && npx wrangler pages deploy .output/public"
+    "deploy:cf": "pnpm build && npx wrangler pages deploy dist"
   },
   "dependencies": {
     "@vite-pwa/nuxt": "^1.1.1",
