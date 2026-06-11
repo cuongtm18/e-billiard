@@ -1,7 +1,7 @@
 import type { BallValue, PlayerBlock } from '~/types/game'
 import { BALL_POINTS, DEFAULT_PLAYER_COUNT, LAG_SCORE_GAIN, LAG_SCORE_LOSS, MIN_PLAYERS } from '~/types/game'
-import { randomBlockColor, releaseBlockColor, resetColorPool } from '~/utils/colors'
-import { clearGameState, loadPlayerSetup, savePlayerSetup } from '~/utils/gameStorage'
+import { randomBlockColor, releaseBlockColor, resetColorPool, syncColorPoolFromBlocks } from '~/utils/colors'
+import { savePlayerSetup } from '~/utils/gameStorage'
 
 function createBlock(index: number, title?: string): PlayerBlock {
   return {
@@ -13,12 +13,8 @@ function createBlock(index: number, title?: string): PlayerBlock {
   }
 }
 
-function buildBlocksFromSetup(): PlayerBlock[] {
-  const saved = loadPlayerSetup()
-  const count = saved?.playerCount ?? DEFAULT_PLAYER_COUNT
-  const names = saved?.names ?? []
-
-  return Array.from({ length: count }, (_, i) => createBlock(i, names[i]))
+function buildFreshBlocks(): PlayerBlock[] {
+  return Array.from({ length: DEFAULT_PLAYER_COUNT }, (_, i) => createBlock(i))
 }
 
 interface ScoreSnapshot {
@@ -55,10 +51,12 @@ export function useGame() {
 
   const canUndo = computed(() => scoreHistory.value.length > 0)
   const canScoreBalls = computed(() => selectedBlockIds.value.length >= MIN_SELECTED_BLOCKS)
+  const canResumeGame = computed(() => !isPlaying.value && blocks.value.length >= MIN_PLAYERS)
 
   function startNewGame() {
+    blocks.value.forEach(b => releaseBlockColor(b.color))
     resetColorPool()
-    blocks.value = buildBlocksFromSetup()
+    blocks.value = buildFreshBlocks()
     selectedBlockIds.value = []
     scoreHistory.value = []
     isPlaying.value = true
@@ -68,7 +66,7 @@ export function useGame() {
     )
   }
 
-  function endGame() {
+  function goHome() {
     if (blocks.value.length > 0) {
       savePlayerSetup(
         blocks.value.map(b => b.title),
@@ -78,11 +76,14 @@ export function useGame() {
 
     isPlaying.value = false
     selectedBlockIds.value = []
-    scoreHistory.value = []
-    blocks.value.forEach(b => releaseBlockColor(b.color))
-    blocks.value = []
-    resetColorPool()
-    clearGameState()
+  }
+
+  function resumeGame() {
+    if (blocks.value.length < MIN_PLAYERS) return
+
+    syncColorPoolFromBlocks(blocks.value)
+    selectedBlockIds.value = []
+    isPlaying.value = true
   }
 
   function removeBlock(id: string) {
@@ -189,8 +190,10 @@ export function useGame() {
     blocks,
     selectedBlockIds,
     canScoreBalls,
+    canResumeGame,
     startNewGame,
-    endGame,
+    goHome,
+    resumeGame,
     removeBlock,
     updateTitle,
     toggleDouble,

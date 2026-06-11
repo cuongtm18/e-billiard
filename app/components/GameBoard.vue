@@ -12,18 +12,36 @@ const {
   scoreLag,
   canUndo,
   undoLastScore,
-  endGame,
+  goHome,
 } = useGame()
 </script>
 
 <template>
   <div class="game-board">
     <header class="game-board__toolbar">
-      <button type="button" class="btn btn--ghost" @click="endGame">
+      <button type="button" class="btn btn--ghost" @click="goHome">
         ← Home
       </button>
-      <p v-if="!canScoreBalls" class="game-board__hint">Select at least 2 players</p>
-      <div v-else class="game-board__toolbar-spacer" aria-hidden="true" />
+
+      <div class="game-board__toolbar-center">
+        <p v-if="!canScoreBalls" class="game-board__hint">Select at least 2 players</p>
+      </div>
+
+      <button
+        type="button"
+        class="game-board__undo"
+        :disabled="!canUndo"
+        title="Hoàn tác"
+        aria-label="Hoàn tác điểm vừa tính"
+        @click="undoLastScore"
+      >
+        <svg class="game-board__undo-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path
+            fill="currentColor"
+            d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62C8.19 11.03 10.21 10 12.5 10c2.48 0 4.5 2.02 4.5 4.5S15 19 12.5 19H10v2h2.5c3.59 0 6.5-2.91 6.5-6.5S16.09 8 12.5 8z"
+          />
+        </svg>
+      </button>
     </header>
 
     <div class="game-board__blocks">
@@ -34,7 +52,6 @@ const {
         :is-selected="selectedBlockIds.includes(block.id)"
         :can-click-balls="canScoreBalls && selectedBlockIds.includes(block.id)"
         :can-toggle-double="canScoreBalls"
-        :can-undo="canUndo"
         :selected-count="selectedBlockIds.length"
         :show-minus-hint="canScoreBalls"
         @toggle-select="toggleBlockSelection(block.id)"
@@ -42,7 +59,6 @@ const {
         @lag="scoreLag(index)"
         @toggle-double="toggleDouble(block.id)"
         @update-title="(title: string) => updateTitle(block.id, title)"
-        @undo="undoLastScore"
       />
     </div>
   </div>
@@ -97,13 +113,15 @@ const {
     font-size: 0.95rem;
   }
 
-  .game-board__toolbar-spacer {
-    width: 3.75rem;
-  }
-
   .game-board__hint {
     font-size: 1.1rem;
-    flex: 1;
+  }
+
+  .game-board__undo {
+    width: 2.5rem;
+    height: 2.5rem;
+    padding: 0.4rem;
+    border-radius: 8px;
   }
 
   .btn {
@@ -134,8 +152,13 @@ const {
   white-space: nowrap;
 }
 
-.game-board__toolbar-spacer {
-  width: 5.5rem;
+.game-board__toolbar-center {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-width: 0;
+  padding: 0 0.5rem;
 }
 
 .game-board__hint {
@@ -144,8 +167,40 @@ const {
   font-weight: 700;
   color: #ff6b35;
   text-align: center;
-  flex: 1;
   animation: game-board-hint-flicker 1.1s ease-in-out infinite;
+}
+
+.game-board__undo {
+  flex-shrink: 0;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0.45rem;
+  border: 1.5px solid rgba(255, 255, 255, 0.28);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.92);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, border-color 0.15s, color 0.15s, opacity 0.15s;
+}
+
+.game-board__undo:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.35);
+  color: white;
+}
+
+.game-board__undo:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.game-board__undo-icon {
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 
 @keyframes game-board-hint-flicker {

@@ -21,7 +21,7 @@ export default defineNuxtPlugin(() => {
         selectedBlockIds: selectedBlockIds.value,
       })
 
-      if (isPlaying.value && blocks.value.length > 0) {
+      if (blocks.value.length > 0) {
         savePlayerSetup(
           blocks.value.map(b => b.title),
           blocks.value.length,

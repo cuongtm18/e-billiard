@@ -8,7 +8,6 @@ const props = defineProps<{
   isSelected: boolean
   canClickBalls: boolean
   canToggleDouble: boolean
-  canUndo: boolean
   selectedCount: number
   showMinusHint: boolean
 }>()
@@ -19,7 +18,6 @@ const emit = defineEmits<{
   'toggle-double': []
   'lag': []
   'update-title': [title: string]
-  'undo': []
 }>()
 
 function onBallClick(ball: BallValue) {
@@ -63,6 +61,17 @@ function commitTitle() {
   isEditingTitle.value = false
   emit('update-title', titleInput.value)
 }
+
+function onBlockSelect() {
+  if (isEditingTitle.value) return
+  emit('toggle-select')
+}
+
+function onBallsAreaClick(event: MouseEvent) {
+  if (props.canClickBalls) {
+    event.stopPropagation()
+  }
+}
 </script>
 
 <template>
@@ -73,6 +82,7 @@ function commitTitle() {
       '--block-color': block.color,
       '--block-title-text': titleTextForBlock(block.color),
     }"
+    @click="onBlockSelect"
   >
     <span v-if="isSelected" class="score-block__ring" aria-hidden="true" />
 
@@ -85,17 +95,13 @@ function commitTitle() {
             v-model="titleInput"
             class="score-block__title-input"
             maxlength="24"
+            @click.stop
             @blur="commitTitle"
             @keydown.enter="commitTitle"
           >
-          <button
-            v-else
-            type="button"
-            class="score-block__title-badge"
-            @click="emit('toggle-select')"
-          >
+          <span v-else class="score-block__title-badge">
             {{ block.title }}
-          </button>
+          </span>
           <button
             v-if="!isEditingTitle"
             type="button"
@@ -115,7 +121,7 @@ function commitTitle() {
           class="score-block__lag"
           title="Đi chấm (+24 / mỗi người khác −12)"
           aria-label="Đi chấm"
-          @click="emit('lag')"
+          @click.stop="emit('lag')"
         >
           <svg class="score-block__lag-icon" viewBox="0 0 24 24" aria-hidden="true">
             <path
@@ -150,25 +156,24 @@ function commitTitle() {
             ? (block.doublePoints ? 'Tắt nhân đôi điểm' : 'Bật nhân đôi điểm')
             : 'Chọn ít nhất 2 người chơi trước'"
           :aria-pressed="block.doublePoints"
-          @click="onToggleDouble"
+          @click.stop="onToggleDouble"
         >
           x2
         </button>
       </div>
     </header>
 
-    <button
-      type="button"
-      class="score-block__score-btn"
-      :class="{ 'score-block__score-btn--negative': block.score < 0 }"
-      @click="emit('toggle-select')"
+    <div
+      class="score-block__score"
+      :class="{ 'score-block__score--negative': block.score < 0 }"
     >
       {{ block.score }}
-    </button>
+    </div>
 
     <div
       class="score-block__balls"
       :class="{ 'score-block__balls--locked': !canClickBalls }"
+      @click="onBallsAreaClick"
     >
       <div v-for="ball in balls" :key="ball" class="score-block__ball-group">
         <BilliardBall
@@ -183,26 +188,6 @@ function commitTitle() {
         </span>
       </div>
     </div>
-
-    <button
-      type="button"
-      class="score-block__undo"
-      :disabled="!canUndo"
-      title="Hoàn tác"
-      aria-label="Hoàn tác điểm vừa tính"
-      @click="emit('undo')"
-    >
-      <svg class="score-block__undo-icon" viewBox="0 0 24 24" aria-hidden="true">
-        <path
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          d="M9 14H4V9M4 9l4-4M4 9l4 4M14 18h2a4 4 0 0 0 0-8h-1"
-        />
-      </svg>
-    </button>
   </article>
 </template>
 
@@ -212,12 +197,13 @@ function commitTitle() {
   background: linear-gradient(145deg, color-mix(in srgb, var(--block-color) 25%, #1a2e1a), #0f1f0f);
   border: 2px solid var(--block-color);
   border-radius: 16px;
-  padding: 1rem 1.25rem 2.75rem;
+  padding: 1rem 1.25rem 1.25rem;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 0.75rem;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
 }
 
 .score-block--selected {
@@ -332,16 +318,10 @@ function commitTitle() {
   padding: 0.6rem 1.5rem;
   font-size: 1.4rem;
   font-weight: 700;
-  cursor: pointer;
-  transition: filter 0.15s;
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.score-block__title-badge:hover {
-  filter: brightness(1.15);
 }
 
 .score-block__title-input {
@@ -358,25 +338,17 @@ function commitTitle() {
   outline: none;
 }
 
-.score-block__score-btn {
+.score-block__score {
   font-size: 4.5rem;
   font-weight: 800;
   color: white;
   line-height: 1;
   font-variant-numeric: tabular-nums;
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-  padding: 0;
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  transition: transform 0.15s;
+  user-select: none;
 }
 
-.score-block__score-btn:hover {
-  transform: scale(1.04);
-}
-
-.score-block__score-btn--negative {
+.score-block__score--negative {
   color: #e74c3c;
 }
 
@@ -402,41 +374,6 @@ function commitTitle() {
   font-size: 1.5rem;
   color: rgba(255, 255, 255, 0.55);
   font-weight: 600;
-}
-
-.score-block__undo {
-  position: absolute;
-  right: 0.6rem;
-  bottom: 0.6rem;
-  z-index: 3;
-  width: 2.25rem;
-  height: 2.25rem;
-  padding: 0;
-  border: 2px solid rgba(255, 255, 255, 0.22);
-  border-radius: 50%;
-  background: rgba(0, 0, 0, 0.35);
-  color: rgba(255, 255, 255, 0.85);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.15s, border-color 0.15s, color 0.15s, opacity 0.15s;
-}
-
-.score-block__undo:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.14);
-  border-color: rgba(255, 255, 255, 0.35);
-  color: white;
-}
-
-.score-block__undo:disabled {
-  opacity: 0.35;
-  cursor: not-allowed;
-}
-
-.score-block__undo-icon {
-  width: 1.15rem;
-  height: 1.15rem;
 }
 
 .score-block__lag {
@@ -524,7 +461,7 @@ function commitTitle() {
     grid-template-columns: 4rem 1fr;
     grid-template-rows: auto 1fr;
     gap: 0.2rem 0.45rem;
-    padding: 0.45rem 0.55rem 2.6rem;
+    padding: 0.45rem 0.55rem 0.45rem;
     border-radius: 10px;
     border-width: 1.5px;
     align-content: center;
@@ -562,7 +499,7 @@ function commitTitle() {
     border-radius: 8px;
   }
 
-  .score-block__score-btn {
+  .score-block__score {
     grid-column: 1;
     grid-row: 2;
     align-self: center;
@@ -586,19 +523,6 @@ function commitTitle() {
 
   .score-block__ball-points {
     font-size: 0.8rem;
-  }
-
-  .score-block__undo {
-    right: 0.45rem;
-    bottom: 0.45rem;
-    width: 2.35rem;
-    height: 2.35rem;
-    border-width: 2px;
-  }
-
-  .score-block__undo-icon {
-    width: 1.2rem;
-    height: 1.2rem;
   }
 
   .score-block__lag {

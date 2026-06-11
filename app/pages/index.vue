@@ -1,7 +1,18 @@
 <script setup lang="ts">
 import { BALL_IMAGES } from '~/types/game'
 
-const { isPlaying, startNewGame } = useGame()
+const { isPlaying, canResumeGame, startNewGame, resumeGame } = useGame()
+
+function handleNewGame() {
+  if (canResumeGame.value) {
+    const confirmed = window.confirm(
+      'Starting a new game will delete all current scores and reset player names. Continue?',
+    )
+    if (!confirmed) return
+  }
+
+  startNewGame()
+}
 
 const welcomeBalls = [
   { value: 3 as const, src: BALL_IMAGES[3] },
@@ -35,9 +46,20 @@ const welcomeBalls = [
       <h1 class="welcome__title">E-Billiard</h1>
       <p class="welcome__subtitle">Application to calculate billiard points</p>
 
-      <button type="button" class="welcome__cta" @click="startNewGame">
-        New Game
-      </button>
+      <div class="welcome__actions">
+        <button
+          v-if="canResumeGame"
+          type="button"
+          class="welcome__cta welcome__cta--resume"
+          @click="resumeGame"
+        >
+          Continue Game
+        </button>
+
+        <button type="button" class="welcome__cta" @click="handleNewGame">
+          New Game
+        </button>
+      </div>
 
       <p class="welcome__note">
         Ball 3 = 1 point · Ball 6 = 2 points · Ball 9 = 3 points
@@ -99,6 +121,15 @@ const welcomeBalls = [
   font-size: 1rem;
 }
 
+.welcome__actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  max-width: 280px;
+}
+
 .welcome__cta {
   background: linear-gradient(135deg, #2ecc71, #27ae60);
   color: #0a1a0a;
@@ -110,11 +141,24 @@ const welcomeBalls = [
   cursor: pointer;
   box-shadow: 0 6px 24px rgba(46, 204, 113, 0.35);
   transition: transform 0.15s, box-shadow 0.15s;
+  width: 100%;
+}
+
+.welcome__cta--resume {
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
+  border: 2px solid rgba(46, 204, 113, 0.55);
+  box-shadow: 0 4px 18px rgba(46, 204, 113, 0.2);
 }
 
 .welcome__cta:hover {
   transform: translateY(-2px);
   box-shadow: 0 10px 32px rgba(46, 204, 113, 0.45);
+}
+
+.welcome__cta--resume:hover {
+  background: rgba(46, 204, 113, 0.15);
+  box-shadow: 0 8px 24px rgba(46, 204, 113, 0.3);
 }
 
 .welcome__cta:active {
