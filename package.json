@@ -2,12 +2,17 @@
   "name": "ebilliard",
   "type": "module",
   "private": true,
+  "packageManager": "pnpm@10.11.1",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "build": "nuxt build",
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
+    "postinstall": "nuxt prepare",
+    "deploy:cf": "pnpm build && npx wrangler pages deploy .output/public"
   },
   "dependencies": {
     "@vite-pwa/nuxt": "^1.1.1",

@@ -9,16 +9,21 @@ export default defineNuxtConfig({
     head: {
       title: 'EBilliard',
       link: [
-        { rel: 'manifest', href: '/manifest.webmanifest' }
+        { rel: 'manifest', href: '/manifest.webmanifest' },
       ],
       meta: [
-        { name: 'theme-color', content: '#000000' }
-      ]
-    }
+        { name: 'theme-color', content: '#000000' },
+      ],
+    },
   },
 
-  routeRules: {
-    '/': { ssr: false },
+  ssr: false,
+
+  nitro: {
+    preset: 'cloudflare_pages',
+    prerender: {
+      autoSubfolderIndex: false,
+    },
   },
 
   modules: ['@vite-pwa/nuxt'],
