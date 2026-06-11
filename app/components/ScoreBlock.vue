@@ -9,6 +9,7 @@ const props = defineProps<{
   canClickBalls: boolean
   canToggleDouble: boolean
   canUndo: boolean
+  selectedCount: number
   showMinusHint: boolean
 }>()
 
@@ -28,6 +29,15 @@ function onBallClick(ball: BallValue) {
 function onToggleDouble() {
   if (!props.canToggleDouble) return
   emit('toggle-double')
+}
+
+function ballPoints(ball: BallValue) {
+  const base = BALL_POINTS[ball]
+  return props.block.doublePoints ? base * 2 : base
+}
+
+function ballGain(ball: BallValue) {
+  return ballPoints(ball) * Math.max(0, props.selectedCount - 1)
 }
 
 const balls: BallValue[] = [3, 6, 9]
@@ -135,8 +145,8 @@ function commitTitle() {
           @click="onBallClick(ball)"
         />
         <span class="score-block__ball-points">
-          +{{ block.doublePoints ? BALL_POINTS[ball] * 2 : BALL_POINTS[ball] }}
-          <template v-if="canClickBalls && showMinusHint"> / −{{ block.doublePoints ? BALL_POINTS[ball] * 2 : BALL_POINTS[ball] }}</template>
+          +{{ ballGain(ball) }}
+          <template v-if="canClickBalls && showMinusHint"> / −{{ ballPoints(ball) }}</template>
         </span>
       </div>
     </div>

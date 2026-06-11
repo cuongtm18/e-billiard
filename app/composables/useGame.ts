@@ -138,9 +138,11 @@ export function useGame() {
     let points = BALL_POINTS[ball]
     if (wasDoubled) points *= 2
 
-    current.score += points
-
     const selectedIds = new Set(selectedBlockIds.value)
+    const otherSelectedCount = selectedBlockIds.value.length - 1
+
+    current.score += points * otherSelectedCount
+
     for (const block of blocks.value) {
       if (block.id !== current.id && selectedIds.has(block.id)) {
         block.score -= points

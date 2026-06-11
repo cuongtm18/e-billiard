@@ -34,6 +34,7 @@ const {
         :can-click-balls="canScoreBalls && selectedBlockIds.includes(block.id)"
         :can-toggle-double="canScoreBalls"
         :can-undo="canUndo"
+        :selected-count="selectedBlockIds.length"
         :show-minus-hint="canScoreBalls"
         @toggle-select="toggleBlockSelection(block.id)"
         @score="(ball: BallValue) => scoreBall(index, ball)"
