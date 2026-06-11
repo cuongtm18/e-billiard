@@ -9,6 +9,7 @@ const {
   toggleBlockSelection,
   canScoreBalls,
   scoreBall,
+  scoreLag,
   canUndo,
   undoLastScore,
   endGame,
@@ -38,6 +39,7 @@ const {
         :show-minus-hint="canScoreBalls"
         @toggle-select="toggleBlockSelection(block.id)"
         @score="(ball: BallValue) => scoreBall(index, ball)"
+        @lag="scoreLag(index)"
         @toggle-double="toggleDouble(block.id)"
         @update-title="(title: string) => updateTitle(block.id, title)"
         @undo="undoLastScore"
@@ -105,9 +107,10 @@ const {
   }
 
   .btn {
-    padding: 0.35rem 0.6rem;
-    font-size: 0.75rem;
-    border-radius: 8px;
+    padding: 0.5rem 0.9rem;
+    font-size: 0.9rem;
+    border-radius: 10px;
+    min-height: 2.5rem;
   }
 
   .game-board__blocks {

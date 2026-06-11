@@ -1,5 +1,5 @@
 import type { BallValue, PlayerBlock } from '~/types/game'
-import { BALL_POINTS, DEFAULT_PLAYER_COUNT, MIN_PLAYERS } from '~/types/game'
+import { BALL_POINTS, DEFAULT_PLAYER_COUNT, LAG_SCORE_GAIN, LAG_SCORE_LOSS, MIN_PLAYERS } from '~/types/game'
 import { randomBlockColor, releaseBlockColor, resetColorPool } from '~/utils/colors'
 import { clearGameState, loadPlayerSetup, savePlayerSetup } from '~/utils/gameStorage'
 
@@ -156,6 +156,26 @@ export function useGame() {
     clearBlockSelection()
   }
 
+  function scoreLag(blockIndex: number) {
+    const current = blocks.value[blockIndex]
+    if (!current) return
+
+    const history = [...scoreHistory.value, captureSnapshot(blocks.value)]
+    scoreHistory.value = history.length > MAX_SCORE_HISTORY
+      ? history.slice(-MAX_SCORE_HISTORY)
+      : history
+
+    current.score += LAG_SCORE_GAIN
+
+    for (const block of blocks.value) {
+      if (block.id !== current.id) {
+        block.score -= LAG_SCORE_LOSS
+      }
+    }
+
+    clearBlockSelection()
+  }
+
   function undoLastScore() {
     const snapshot = scoreHistory.value.pop()
     if (!snapshot) return
@@ -177,6 +197,7 @@ export function useGame() {
     toggleBlockSelection,
     clearBlockSelection,
     scoreBall,
+    scoreLag,
     canUndo,
     undoLastScore,
   }

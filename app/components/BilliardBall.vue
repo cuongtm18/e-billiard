@@ -77,10 +77,11 @@ defineEmits<{
 
 @media (max-width: 640px) {
   .ball__badge {
-    font-size: 0.5rem;
-    padding: 1px 3px;
-    top: -3px;
-    right: -3px;
+    font-size: 0.62rem;
+    padding: 2px 4px;
+    top: -4px;
+    right: -4px;
+    border-radius: 7px;
   }
 }
 </style>

@@ -10,6 +10,9 @@ export const BALL_POINTS: Record<BallValue, number> = {
   9: 3,
 }
 
+export const LAG_SCORE_GAIN = 24
+export const LAG_SCORE_LOSS = 12
+
 export const BALL_IMAGES: Record<BallValue, string> = {
   3: '/ball3.jpg',
   6: '/ball6.jpg',
