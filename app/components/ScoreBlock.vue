@@ -439,7 +439,7 @@ function onBallsAreaClick(event: MouseEvent) {
   letter-spacing: 0.02em;
 }
 
-.score-block__double:hover:not(:disabled) {
+.score-block__double:hover:not(:disabled):not(.score-block__double--active) {
   background: rgba(255, 255, 255, 0.14);
   border-color: rgba(255, 255, 255, 0.35);
   color: white;
@@ -450,7 +450,8 @@ function onBallsAreaClick(event: MouseEvent) {
   cursor: not-allowed;
 }
 
-.score-block__double--active {
+.score-block__double--active,
+.score-block__double--active:hover:not(:disabled) {
   background: #ff6b35;
   border-color: #ff8c5a;
   color: white;
