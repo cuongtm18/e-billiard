@@ -1,4 +1,4 @@
-import { syncColorPoolFromBlocks } from '~/utils/colors'
+import { normalizeBlockColor } from '~/utils/colors'
 import { loadGameState, saveGameState, savePlayerSetup } from '~/utils/gameStorage'
 
 export default defineNuxtPlugin(() => {
@@ -7,9 +7,11 @@ export default defineNuxtPlugin(() => {
 
   if (saved) {
     isPlaying.value = saved.isPlaying
-    blocks.value = saved.blocks
+    blocks.value = saved.blocks.map(block => ({
+      ...block,
+      color: normalizeBlockColor(block.color),
+    }))
     selectedBlockIds.value = saved.selectedBlockIds
-    syncColorPoolFromBlocks(saved.blocks)
   }
 
   watch(

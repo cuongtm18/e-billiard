@@ -1,14 +1,15 @@
 import type { BallValue, PlayerBlock } from '~/types/game'
-import { BALL_POINTS, DEFAULT_PLAYER_COUNT, LAG_SCORE_GAIN, LAG_SCORE_LOSS, MIN_PLAYERS } from '~/types/game'
-import { randomBlockColor, releaseBlockColor, resetColorPool, syncColorPoolFromBlocks } from '~/utils/colors'
+import { BALL_POINTS, DEFAULT_PLAYER_COUNT, defaultPlayerTitle, LAG_SCORE_GAIN, LAG_SCORE_LOSS, MIN_PLAYERS } from '~/types/game'
+import { DEFAULT_BLOCK_COLOR } from '~/utils/colors'
 import { savePlayerSetup } from '~/utils/gameStorage'
+import type { GameTransferImport } from '~/utils/gameTransfer'
 
 function createBlock(index: number, title?: string): PlayerBlock {
   return {
     id: crypto.randomUUID(),
-    title: title?.trim() || `Người chơi ${index + 1}`,
+    title: title?.trim() || defaultPlayerTitle(index),
     score: 0,
-    color: randomBlockColor(),
+    color: DEFAULT_BLOCK_COLOR,
     doublePoints: false,
   }
 }
@@ -54,8 +55,6 @@ export function useGame() {
   const canResumeGame = computed(() => !isPlaying.value && blocks.value.length >= MIN_PLAYERS)
 
   function startNewGame() {
-    blocks.value.forEach(b => releaseBlockColor(b.color))
-    resetColorPool()
     blocks.value = buildFreshBlocks()
     selectedBlockIds.value = []
     scoreHistory.value = []
@@ -81,7 +80,6 @@ export function useGame() {
   function resumeGame() {
     if (blocks.value.length < MIN_PLAYERS) return
 
-    syncColorPoolFromBlocks(blocks.value)
     selectedBlockIds.value = []
     isPlaying.value = true
   }
@@ -90,7 +88,6 @@ export function useGame() {
     if (blocks.value.length <= MIN_PLAYERS) return
     const index = blocks.value.findIndex(b => b.id === id)
     if (index === -1) return
-    releaseBlockColor(blocks.value[index].color)
     const removedId = blocks.value[index].id
     blocks.value.splice(index, 1)
     selectedBlockIds.value = selectedBlockIds.value.filter(id => id !== removedId)
@@ -185,6 +182,30 @@ export function useGame() {
     clearBlockSelection()
   }
 
+  function applyImportedGame(data: GameTransferImport) {
+    blocks.value = data.blocks
+    isPlaying.value = data.isPlaying
+    selectedBlockIds.value = []
+    scoreHistory.value = []
+    savePlayerSetup(
+      blocks.value.map(b => b.title),
+      blocks.value.length,
+    )
+  }
+
+  function shouldConfirmImportOverwrite() {
+    if (blocks.value.length < MIN_PLAYERS) return false
+
+    return (
+      isPlaying.value
+      || blocks.value.some((block, index) =>
+        block.score !== 0
+        || block.doublePoints
+        || block.title !== defaultPlayerTitle(index),
+      )
+    )
+  }
+
   return {
     isPlaying,
     blocks,
@@ -203,5 +224,7 @@ export function useGame() {
     scoreLag,
     canUndo,
     undoLastScore,
+    applyImportedGame,
+    shouldConfirmImportOverwrite,
   }
 }

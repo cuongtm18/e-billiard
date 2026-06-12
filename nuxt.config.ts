@@ -8,6 +8,9 @@ export default defineNuxtConfig({
   app: {
     head: {
       title: 'EBilliard',
+      htmlAttrs: {
+        lang: 'en',
+      },
       link: [
         { rel: 'manifest', href: '/manifest.webmanifest' },
       ],

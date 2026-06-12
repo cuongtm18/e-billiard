@@ -65,6 +65,8 @@ const welcomeBalls = [
         Ball 3 = 1 point · Ball 6 = 2 points · Ball 9 = 3 points
       </p>
     </main>
+
+    <GameTransferModal />
   </div>
 </template>
 

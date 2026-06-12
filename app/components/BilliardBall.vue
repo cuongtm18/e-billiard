@@ -18,7 +18,7 @@ defineEmits<{
     type="button"
     class="ball"
     :class="{ 'ball--doubled': doubled, 'ball--disabled': disabled }"
-    :aria-label="`Bi ${value}`"
+    :aria-label="`Ball ${value}`"
     :disabled="disabled"
     @click="$emit('click')"
   >
@@ -29,7 +29,7 @@ defineEmits<{
       <span v-if="doubled" class="ball-frame__ring" aria-hidden="true" />
       <img
         :src="BALL_IMAGES[value]"
-        :alt="`Bi ${value}`"
+        :alt="`Ball ${value}`"
         class="ball-frame__img"
         width="40"
         height="40"

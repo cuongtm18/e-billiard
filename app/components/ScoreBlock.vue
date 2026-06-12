@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import type { BallValue, PlayerBlock } from '~/types/game'
 import { BALL_POINTS } from '~/types/game'
-import { titleTextForBlock } from '~/utils/colors'
-
 const props = defineProps<{
   block: PlayerBlock
   isSelected: boolean
@@ -78,10 +76,6 @@ function onBallsAreaClick(event: MouseEvent) {
   <article
     class="score-block"
     :class="{ 'score-block--selected': isSelected }"
-    :style="{
-      '--block-color': block.color,
-      '--block-title-text': titleTextForBlock(block.color),
-    }"
     @click="onBlockSelect"
   >
     <span v-if="isSelected" class="score-block__ring" aria-hidden="true" />
@@ -119,8 +113,8 @@ function onBallsAreaClick(event: MouseEvent) {
         <button
           type="button"
           class="score-block__lag"
-          title="Đi chấm (+24 / mỗi người khác −12)"
-          aria-label="Đi chấm"
+          title="Lag (+24 / −12 for each other player)"
+          aria-label="Lag"
           @click.stop="emit('lag')"
         >
           <svg class="score-block__lag-icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -150,11 +144,11 @@ function onBallsAreaClick(event: MouseEvent) {
           :class="{ 'score-block__double--active': block.doublePoints }"
           :disabled="!canToggleDouble"
           :title="canToggleDouble
-            ? (block.doublePoints ? 'Tắt nhân đôi điểm' : 'Bật nhân đôi điểm')
-            : 'Chọn ít nhất 2 người chơi trước'"
+            ? (block.doublePoints ? 'Turn off double points' : 'Turn on double points')
+            : 'Select at least 2 players first'"
           :aria-label="canToggleDouble
-            ? (block.doublePoints ? 'Tắt nhân đôi điểm' : 'Bật nhân đôi điểm')
-            : 'Chọn ít nhất 2 người chơi trước'"
+            ? (block.doublePoints ? 'Turn off double points' : 'Turn on double points')
+            : 'Select at least 2 players first'"
           :aria-pressed="block.doublePoints"
           @click.stop="onToggleDouble"
         >
@@ -193,9 +187,12 @@ function onBallsAreaClick(event: MouseEvent) {
 
 <style scoped>
 .score-block {
+  --select: #ffc940;
+  --select-bright: #ffe082;
+  --select-border: #f5c518;
   position: relative;
-  background: linear-gradient(145deg, color-mix(in srgb, var(--block-color) 25%, #1a2e1a), #0f1f0f);
-  border: 2px solid var(--block-color);
+  background: linear-gradient(145deg, #1a2e1a, #0f1f0f);
+  border: 2px solid rgba(255, 255, 255, 0.16);
   border-radius: 16px;
   padding: 1rem 1.25rem 1.25rem;
   display: flex;
@@ -204,21 +201,28 @@ function onBallsAreaClick(event: MouseEvent) {
   gap: 0.75rem;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
   cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .score-block--selected {
-  border-width: 3px;
-  border-color: color-mix(in srgb, var(--block-color) 80%, white);
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--select-border) 16%, #1f3420),
+    color-mix(in srgb, var(--select-border) 9%, #142414)
+  );
+  border-width: 2.5px;
+  border-color: var(--select);
   box-shadow:
-    0 0 28px color-mix(in srgb, var(--block-color) 55%, transparent),
-    0 4px 20px rgba(0, 0, 0, 0.35);
+    0 0 0 1px rgba(255, 201, 64, 0.28),
+    0 0 8px rgba(245, 197, 24, 0.22),
+    0 4px 16px rgba(0, 0, 0, 0.32);
 }
 
 .score-block__ring {
   position: absolute;
-  inset: -5px;
+  inset: -3px;
   border-radius: inherit;
-  border: 3px solid var(--block-color);
+  border: 2px solid var(--select);
   pointer-events: none;
   z-index: 2;
   animation: score-block-border-flicker 1.1s ease-in-out infinite;
@@ -226,19 +230,15 @@ function onBallsAreaClick(event: MouseEvent) {
 
 @keyframes score-block-border-flicker {
   0%, 100% {
-    border-color: var(--block-color);
+    border-color: var(--select);
     opacity: 1;
-    box-shadow:
-      0 0 10px color-mix(in srgb, var(--block-color) 70%, transparent),
-      inset 0 0 6px color-mix(in srgb, var(--block-color) 40%, transparent);
+    box-shadow: 0 0 6px rgba(245, 197, 24, 0.32);
   }
 
   50% {
-    border-color: color-mix(in srgb, var(--block-color) 35%, white);
-    opacity: 0.45;
-    box-shadow:
-      0 0 22px color-mix(in srgb, var(--block-color) 90%, white),
-      inset 0 0 12px color-mix(in srgb, var(--block-color) 55%, white);
+    border-color: var(--select-bright);
+    opacity: 0.72;
+    box-shadow: 0 0 4px rgba(255, 224, 130, 0.2);
   }
 }
 
@@ -246,8 +246,8 @@ function onBallsAreaClick(event: MouseEvent) {
   .score-block__ring {
     animation: none;
     opacity: 1;
-    border-color: var(--block-color);
-    box-shadow: 0 0 12px color-mix(in srgb, var(--block-color) 65%, transparent);
+    border-color: var(--select);
+    box-shadow: 0 0 6px rgba(245, 197, 24, 0.28);
   }
 }
 
@@ -311,9 +311,9 @@ function onBallsAreaClick(event: MouseEvent) {
 }
 
 .score-block__title-badge {
-  background: var(--block-color);
-  color: var(--block-title-text, #ffffff);
-  border: none;
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 10px;
   padding: 0.6rem 1.5rem;
   font-size: 1.4rem;
@@ -324,9 +324,14 @@ function onBallsAreaClick(event: MouseEvent) {
   white-space: nowrap;
 }
 
+.score-block--selected .score-block__title-badge {
+  background: color-mix(in srgb, var(--select-border) 24%, rgba(255, 255, 255, 0.1));
+  border-color: rgba(255, 201, 64, 0.55);
+}
+
 .score-block__title-input {
   background: rgba(0, 0, 0, 0.4);
-  border: 2px solid var(--block-color);
+  border: 2px solid rgba(255, 255, 255, 0.22);
   border-radius: 10px;
   color: white;
   padding: 0.6rem 1.5rem;
@@ -336,6 +341,10 @@ function onBallsAreaClick(event: MouseEvent) {
   width: 100%;
   max-width: 260px;
   outline: none;
+}
+
+.score-block--selected .score-block__title-input {
+  border-color: var(--select);
 }
 
 .score-block__score {
@@ -378,34 +387,30 @@ function onBallsAreaClick(event: MouseEvent) {
 
 .score-block__lag {
   flex-shrink: 0;
-  width: 2.75rem;
-  height: 2.75rem;
+  width: 2.15rem;
+  height: 2.15rem;
   padding: 0;
-  border: 2px solid #f5c518;
+  border: 1.5px solid rgba(245, 197, 24, 0.55);
   border-radius: 50%;
-  background: rgba(245, 197, 24, 0.12);
-  color: #f5c518;
+  background: rgba(245, 197, 24, 0.08);
+  color: rgba(245, 197, 24, 0.88);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow:
-    0 0 10px rgba(245, 197, 24, 0.65),
-    inset 0 0 8px rgba(245, 197, 24, 0.18);
-  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+  box-shadow: none;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
 }
 
 .score-block__lag:hover {
-  background: rgba(245, 197, 24, 0.28);
-  border-color: #ffdf5e;
-  box-shadow:
-    0 0 14px rgba(245, 197, 24, 0.85),
-    inset 0 0 10px rgba(245, 197, 24, 0.28);
+  background: rgba(245, 197, 24, 0.16);
+  border-color: rgba(245, 197, 24, 0.75);
+  color: #f5c518;
 }
 
 .score-block__lag-icon {
-  width: 1.65rem;
-  height: 1.65rem;
+  width: 1.2rem;
+  height: 1.2rem;
 }
 
 .score-block__lag-runner-head,
@@ -419,14 +424,14 @@ function onBallsAreaClick(event: MouseEvent) {
 
 .score-block__double {
   flex-shrink: 0;
-  min-width: 2.75rem;
-  height: 2.75rem;
-  padding: 0 0.7rem;
+  min-width: 3.5rem;
+  height: 3.5rem;
+  padding: 0 1rem;
   background: rgba(255, 255, 255, 0.08);
   border: 2px solid rgba(255, 255, 255, 0.22);
   color: rgba(255, 255, 255, 0.75);
-  border-radius: 22px;
-  font-size: 0.95rem;
+  border-radius: 24px;
+  font-size: 1.25rem;
   font-weight: 800;
   line-height: 1;
   cursor: pointer;
@@ -473,12 +478,12 @@ function onBallsAreaClick(event: MouseEvent) {
   }
 
   .score-block--selected {
-    border-width: 2.5px;
+    border-width: 2px;
   }
 
   .score-block__ring {
-    inset: -4px;
-    border-width: 2.5px;
+    inset: -2px;
+    border-width: 2px;
   }
 
   .score-block__title-badge,
@@ -526,22 +531,22 @@ function onBallsAreaClick(event: MouseEvent) {
   }
 
   .score-block__lag {
-    width: 2.5rem;
-    height: 2.5rem;
-    border-width: 2px;
+    width: 2rem;
+    height: 2rem;
+    border-width: 1.5px;
   }
 
   .score-block__lag-icon {
-    width: 1.5rem;
-    height: 1.5rem;
+    width: 1.1rem;
+    height: 1.1rem;
   }
 
   .score-block__double {
-    min-width: 2.5rem;
-    height: 2.5rem;
-    padding: 0 0.55rem;
-    font-size: 0.92rem;
-    border-radius: 16px;
+    min-width: 3.25rem;
+    height: 3.25rem;
+    padding: 0 0.85rem;
+    font-size: 1.15rem;
+    border-radius: 20px;
     border-width: 2px;
   }
 }

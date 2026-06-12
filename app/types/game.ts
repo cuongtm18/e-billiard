@@ -2,6 +2,10 @@ export const MIN_PLAYERS = 2
 export const MAX_PLAYERS = 3
 export const DEFAULT_PLAYER_COUNT = 3
 
+export function defaultPlayerTitle(index: number): string {
+  return `Player ${index + 1}`
+}
+
 export type BallValue = 3 | 6 | 9
 
 export const BALL_POINTS: Record<BallValue, number> = {

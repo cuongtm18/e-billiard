@@ -14,6 +14,8 @@ const {
   undoLastScore,
   goHome,
 } = useGame()
+
+const { openShareModal, openImportModal } = useGameTransfer()
 </script>
 
 <template>
@@ -24,15 +26,18 @@ const {
       </button>
 
       <div class="game-board__toolbar-center">
-        <p v-if="!canScoreBalls" class="game-board__hint">Select at least 2 players</p>
+        <GameMenuDropdown
+          @share="openShareModal"
+          @import="openImportModal"
+        />
       </div>
 
       <button
         type="button"
         class="game-board__undo"
         :disabled="!canUndo"
-        title="Hoàn tác"
-        aria-label="Hoàn tác điểm vừa tính"
+        title="Undo"
+        aria-label="Undo last score"
         @click="undoLastScore"
       >
         <svg class="game-board__undo-icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -80,19 +85,10 @@ const {
   flex-wrap: wrap;
 }
 
-.game-board__title {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: rgba(255, 255, 255, 0.9);
-  margin: 0;
-  flex: 1;
-  text-align: center;
-}
-
 .game-board__blocks {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
 }
 
 @media (max-width: 640px) {
@@ -107,14 +103,6 @@ const {
     margin-bottom: 0.35rem;
     gap: 0.35rem;
     flex-shrink: 0;
-  }
-
-  .game-board__title {
-    font-size: 0.95rem;
-  }
-
-  .game-board__hint {
-    font-size: 1.1rem;
   }
 
   .game-board__undo {
@@ -134,10 +122,7 @@ const {
   .game-board__blocks {
     flex: 1;
     min-height: 0;
-    display: flex;
-    flex-direction: column;
     gap: 0.35rem;
-    grid-template-columns: unset;
   }
 }
 
@@ -159,15 +144,6 @@ const {
   align-items: center;
   min-width: 0;
   padding: 0 0.5rem;
-}
-
-.game-board__hint {
-  margin: 0;
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: #ff6b35;
-  text-align: center;
-  animation: game-board-hint-flicker 1.1s ease-in-out infinite;
 }
 
 .game-board__undo {
@@ -201,33 +177,6 @@ const {
   width: 100%;
   height: 100%;
   display: block;
-}
-
-@keyframes game-board-hint-flicker {
-  0%, 100% {
-    color: #ff6b35;
-    opacity: 1;
-    text-shadow:
-      0 0 8px rgba(255, 107, 53, 0.75),
-      0 0 18px rgba(255, 107, 53, 0.35);
-  }
-
-  50% {
-    color: #fff3c4;
-    opacity: 0.45;
-    text-shadow:
-      0 0 14px rgba(255, 107, 53, 1),
-      0 0 28px rgba(255, 160, 90, 0.65);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .game-board__hint {
-    animation: none;
-    opacity: 1;
-    color: #ff6b35;
-    text-shadow: 0 0 10px rgba(255, 107, 53, 0.8);
-  }
 }
 
 .btn--ghost {
