@@ -6,6 +6,19 @@ export function defaultPlayerTitle(index: number): string {
   return `Player ${index + 1}`
 }
 
+export function formatPlayerTitle(title: string): string {
+  const trimmed = title.trim()
+  if (!trimmed) return trimmed
+
+  return trimmed
+    .split(/\s+/)
+    .map((word) => {
+      if (!word) return word
+      return word.charAt(0).toLocaleUpperCase() + word.slice(1).toLocaleLowerCase()
+    })
+    .join(' ')
+}
+
 export type BallValue = 3 | 6 | 9
 
 export const BALL_POINTS: Record<BallValue, number> = {

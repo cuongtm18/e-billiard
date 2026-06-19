@@ -1,5 +1,5 @@
 import type { PlayerBlock } from '~/types/game'
-import { MAX_PLAYERS, MIN_PLAYERS, defaultPlayerTitle } from '~/types/game'
+import { MAX_PLAYERS, MIN_PLAYERS, defaultPlayerTitle, formatPlayerTitle } from '~/types/game'
 import { DEFAULT_BLOCK_COLOR } from '~/utils/colors'
 
 export const TRANSFER_PREFIX = 'eb1.'
@@ -120,7 +120,7 @@ export function decodeGameTransfer(code: string): GameTransferImport | null {
       isPlaying: parsed.p,
       blocks: parsed.b.map((block, index) => ({
         id: crypto.randomUUID(),
-        title: block.t.trim() || defaultPlayerTitle(index),
+        title: block.t.trim() ? formatPlayerTitle(block.t) : defaultPlayerTitle(index),
         score: block.s,
         color: DEFAULT_BLOCK_COLOR,
         doublePoints: block.d === true,

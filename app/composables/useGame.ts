@@ -1,5 +1,5 @@
 import type { BallValue, PlayerBlock } from '~/types/game'
-import { BALL_POINTS, DEFAULT_PLAYER_COUNT, defaultPlayerTitle, LAG_SCORE_GAIN, LAG_SCORE_LOSS, MIN_PLAYERS } from '~/types/game'
+import { BALL_POINTS, DEFAULT_PLAYER_COUNT, defaultPlayerTitle, formatPlayerTitle, LAG_SCORE_GAIN, LAG_SCORE_LOSS, MIN_PLAYERS } from '~/types/game'
 import { DEFAULT_BLOCK_COLOR } from '~/utils/colors'
 import { savePlayerSetup } from '~/utils/gameStorage'
 import type { GameTransferImport } from '~/utils/gameTransfer'
@@ -7,7 +7,7 @@ import type { GameTransferImport } from '~/utils/gameTransfer'
 function createBlock(index: number, title?: string): PlayerBlock {
   return {
     id: crypto.randomUUID(),
-    title: title?.trim() || defaultPlayerTitle(index),
+    title: title?.trim() ? formatPlayerTitle(title) : defaultPlayerTitle(index),
     score: 0,
     color: DEFAULT_BLOCK_COLOR,
     doublePoints: false,
@@ -36,10 +36,10 @@ function captureSnapshot(blocks: PlayerBlock[]): ScoreSnapshot {
 function applySnapshot(blocks: PlayerBlock[], snapshot: ScoreSnapshot) {
   for (const block of blocks) {
     if (block.id in snapshot.scores) {
-      block.score = snapshot.scores[block.id]
+      block.score = snapshot.scores[block.id] as any
     }
     if (block.id in snapshot.doublePoints) {
-      block.doublePoints = snapshot.doublePoints[block.id]
+      block.doublePoints = snapshot.doublePoints[block.id] as any
     }
   }
 }
@@ -88,14 +88,17 @@ export function useGame() {
     if (blocks.value.length <= MIN_PLAYERS) return
     const index = blocks.value.findIndex(b => b.id === id)
     if (index === -1) return
-    const removedId = blocks.value[index].id
+    const removedId = blocks.value?.[index]?.id
     blocks.value.splice(index, 1)
     selectedBlockIds.value = selectedBlockIds.value.filter(id => id !== removedId)
   }
 
   function updateTitle(id: string, title: string) {
     const block = blocks.value.find(b => b.id === id)
-    if (block) block.title = title.trim() || block.title
+    if (block) {
+      const formatted = formatPlayerTitle(title)
+      block.title = formatted || block.title
+    }
   }
 
   function toggleDouble(id: string) {
@@ -147,8 +150,8 @@ export function useGame() {
       }
     }
 
-    if (wasDoubled) {
-      current.doublePoints = false
+    for (const block of blocks.value) {
+      block.doublePoints = false
     }
 
     clearBlockSelection()
@@ -157,6 +160,11 @@ export function useGame() {
   function scoreLag(blockIndex: number) {
     const current = blocks.value[blockIndex]
     if (!current) return
+
+    const confirmed = window.confirm(
+      `Apply Run Out Score for ${current.title}? (+${LAG_SCORE_GAIN} / −${LAG_SCORE_LOSS} for each other player)`,
+    )
+    if (!confirmed) return
 
     const history = [...scoreHistory.value, captureSnapshot(blocks.value)]
     scoreHistory.value = history.length > MAX_SCORE_HISTORY
@@ -180,6 +188,23 @@ export function useGame() {
 
     applySnapshot(blocks.value, snapshot)
     clearBlockSelection()
+  }
+
+  function resetGame() {
+    if (blocks.value.length < MIN_PLAYERS) return
+
+    const confirmed = window.confirm(
+      'Reset all player scores to 0? This cannot be undone.',
+    )
+    if (!confirmed) return
+
+    for (const block of blocks.value) {
+      block.score = 0
+      block.doublePoints = false
+    }
+
+    selectedBlockIds.value = []
+    scoreHistory.value = []
   }
 
   function applyImportedGame(data: GameTransferImport) {
@@ -224,6 +249,7 @@ export function useGame() {
     scoreLag,
     canUndo,
     undoLastScore,
+    resetGame,
     applyImportedGame,
     shouldConfirmImportOverwrite,
   }

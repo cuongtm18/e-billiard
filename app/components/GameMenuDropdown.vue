@@ -2,6 +2,7 @@
 const emit = defineEmits<{
   share: []
   import: []
+  reset: []
 }>()
 
 const open = ref(false)
@@ -23,6 +24,11 @@ function onShare() {
 function onImport() {
   closeMenu()
   emit('import')
+}
+
+function onReset() {
+  closeMenu()
+  emit('reset')
 }
 
 function onDocumentClick(event: MouseEvent) {
@@ -65,6 +71,9 @@ onUnmounted(() => {
       </button>
       <button type="button" class="game-menu__item" role="menuitem" @click="onImport">
         Import game
+      </button>
+      <button type="button" class="game-menu__item game-menu__item--danger" role="menuitem" @click="onReset">
+        Reset game
       </button>
     </div>
   </div>
@@ -135,6 +144,15 @@ onUnmounted(() => {
 .game-menu__item:hover {
   background: rgba(255, 255, 255, 0.1);
   color: white;
+}
+
+.game-menu__item--danger {
+  color: #f87171;
+}
+
+.game-menu__item--danger:hover {
+  background: rgba(248, 113, 113, 0.12);
+  color: #fca5a5;
 }
 
 @media (max-width: 640px) {

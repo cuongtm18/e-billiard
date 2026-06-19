@@ -109,34 +109,6 @@ function onBallsAreaClick(event: MouseEvent) {
         </div>
       </div>
 
-      <div class="score-block__header-center">
-        <button
-          type="button"
-          class="score-block__lag"
-          title="Lag (+24 / −12 for each other player)"
-          aria-label="Lag"
-          @click.stop="emit('lag')"
-        >
-          <svg class="score-block__lag-icon" viewBox="0 0 24 24" aria-hidden="true">
-            <path
-              class="score-block__lag-star"
-              d="M12 2.2 14.1 9h6.9l-5.6 4.1 2.1 6.7L12 17.6 6.5 19.8l2.1-6.7L3 9h6.9L12 2.2z"
-              fill="currentColor"
-            />
-            <circle class="score-block__lag-runner-head" cx="12" cy="10.2" r="1.35" />
-            <path
-              class="score-block__lag-runner-body"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.25"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M11.2 11.6h1.6l.7 1.9M10.4 14.8l2-.7 1.8 1.2M13.6 14.1l-1.4 2.1M10.1 14.3l-.9 2.2"
-            />
-          </svg>
-        </button>
-      </div>
-
       <div class="score-block__header-end">
         <button
           type="button"
@@ -156,6 +128,32 @@ function onBallsAreaClick(event: MouseEvent) {
         </button>
       </div>
     </header>
+
+    <button
+      type="button"
+      class="score-block__lag"
+      title="Lag (+24 / −12 for each other player)"
+      aria-label="Lag"
+      @click.stop="emit('lag')"
+    >
+      <svg class="score-block__lag-icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path
+          class="score-block__lag-star"
+          d="M12 2.2 14.1 9h6.9l-5.6 4.1 2.1 6.7L12 17.6 6.5 19.8l2.1-6.7L3 9h6.9L12 2.2z"
+          fill="currentColor"
+        />
+        <circle class="score-block__lag-runner-head" cx="12" cy="10.2" r="1.35" />
+        <path
+          class="score-block__lag-runner-body"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.25"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M11.2 11.6h1.6l.7 1.9M10.4 14.8l2-.7 1.8 1.2M13.6 14.1l-1.4 2.1M10.1 14.3l-.9 2.2"
+        />
+      </svg>
+    </button>
 
     <div
       class="score-block__score"
@@ -194,7 +192,7 @@ function onBallsAreaClick(event: MouseEvent) {
   background: linear-gradient(145deg, #1a2e1a, #0f1f0f);
   border: 2px solid rgba(255, 255, 255, 0.16);
   border-radius: 16px;
-  padding: 1rem 1.25rem 1.25rem;
+  padding: 1rem 1.25rem 2.5rem;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -261,23 +259,18 @@ function onBallsAreaClick(event: MouseEvent) {
 
 .score-block__header-start,
 .score-block__header-end {
-  flex: 1;
   display: flex;
   align-items: center;
   min-width: 0;
 }
 
 .score-block__header-start {
+  flex: 1;
   justify-content: flex-start;
 }
 
-.score-block__header-center {
-  flex-shrink: 0;
-  display: flex;
-  justify-content: center;
-}
-
 .score-block__header-end {
+  flex-shrink: 0;
   justify-content: flex-end;
 }
 
@@ -386,6 +379,10 @@ function onBallsAreaClick(event: MouseEvent) {
 }
 
 .score-block__lag {
+  position: absolute;
+  right: 0.55rem;
+  bottom: 0.45rem;
+  z-index: 3;
   flex-shrink: 0;
   width: 2.15rem;
   height: 2.15rem;
@@ -467,7 +464,7 @@ function onBallsAreaClick(event: MouseEvent) {
     grid-template-columns: 4rem 1fr;
     grid-template-rows: auto 1fr;
     gap: 0.2rem 0.45rem;
-    padding: 0.45rem 0.55rem 0.45rem;
+    padding: 0.45rem 0.55rem 2.35rem;
     border-radius: 10px;
     border-width: 1.5px;
     align-content: center;
@@ -532,6 +529,8 @@ function onBallsAreaClick(event: MouseEvent) {
   }
 
   .score-block__lag {
+    right: 0.4rem;
+    bottom: 0.35rem;
     width: 2rem;
     height: 2rem;
     border-width: 1.5px;

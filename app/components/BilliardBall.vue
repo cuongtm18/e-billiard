@@ -8,9 +8,14 @@ defineProps<{
   disabled?: boolean
 }>()
 
-defineEmits<{
+const emit = defineEmits<{
   click: []
 }>()
+
+function onClick(event: MouseEvent) {
+  event.stopPropagation()
+  emit('click')
+}
 </script>
 
 <template>
@@ -20,7 +25,7 @@ defineEmits<{
     :class="{ 'ball--doubled': doubled, 'ball--disabled': disabled }"
     :aria-label="`Ball ${value}`"
     :disabled="disabled"
-    @click="$emit('click')"
+    @click="onClick"
   >
     <span
       class="ball-frame ball-frame--md ball-frame--interactive"

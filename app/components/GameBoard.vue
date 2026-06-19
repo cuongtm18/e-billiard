@@ -12,6 +12,7 @@ const {
   scoreLag,
   canUndo,
   undoLastScore,
+  resetGame,
   goHome,
 } = useGame()
 
@@ -29,6 +30,7 @@ const { openShareModal, openImportModal } = useGameTransfer()
         <GameMenuDropdown
           @share="openShareModal"
           @import="openImportModal"
+          @reset="resetGame"
         />
       </div>
 
