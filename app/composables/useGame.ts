@@ -198,6 +198,9 @@ export function useGame() {
     )
     if (!confirmed) return
 
+    const { recordReset } = useGameHistory()
+    recordReset(blocks.value)
+
     for (const block of blocks.value) {
       block.score = 0
       block.doublePoints = false

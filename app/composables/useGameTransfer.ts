@@ -4,13 +4,13 @@ import {
   extractTransferCode,
 } from '~/utils/gameTransfer'
 
-export type GameTransferMode = 'share' | 'import'
+export type GameTransferMode = 'export' | 'import'
 
 export function useGameTransfer() {
   const { blocks, isPlaying, applyImportedGame, shouldConfirmImportOverwrite } = useGame()
 
   const modalOpen = useState('game-transfer-modal-open', () => false)
-  const modalMode = useState<GameTransferMode>('game-transfer-modal-mode', () => 'share')
+  const modalMode = useState<GameTransferMode>('game-transfer-modal-mode', () => 'export')
   const transferMessage = useState<string | null>('game-transfer-message', () => null)
   const transferError = useState<string | null>('game-transfer-error', () => null)
 
@@ -19,10 +19,10 @@ export function useGameTransfer() {
     return encodeGameTransfer(blocks.value, isPlaying.value)
   })
 
-  function openShareModal() {
+  function openExportModal() {
     transferMessage.value = null
     transferError.value = null
-    modalMode.value = 'share'
+    modalMode.value = 'export'
     modalOpen.value = true
   }
 
@@ -75,7 +75,7 @@ export function useGameTransfer() {
     exportCode,
     transferMessage,
     transferError,
-    openShareModal,
+    openExportModal,
     openImportModal,
     closeTransferModal,
     importFromScan,

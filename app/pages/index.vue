@@ -2,6 +2,7 @@
 import { BALL_IMAGES } from '~/types/game'
 
 const { isPlaying, canResumeGame, startNewGame, resumeGame } = useGame()
+const { hasHistory, openHistoryModal } = useGameHistory()
 
 function handleNewGame() {
   if (canResumeGame.value) {
@@ -56,6 +57,15 @@ const welcomeBalls = [
           Continue Game
         </button>
 
+        <button
+          v-if="hasHistory"
+          type="button"
+          class="welcome__cta welcome__cta--history"
+          @click="openHistoryModal"
+        >
+          History
+        </button>
+
         <button type="button" class="welcome__cta" @click="handleNewGame">
           New Game
         </button>
@@ -67,6 +77,7 @@ const welcomeBalls = [
     </main>
 
     <GameTransferModal />
+    <GameHistoryModal />
   </div>
 </template>
 
@@ -153,6 +164,13 @@ const welcomeBalls = [
   box-shadow: 0 4px 18px rgba(46, 204, 113, 0.2);
 }
 
+.welcome__cta--history {
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
+  border: 2px solid rgba(125, 211, 252, 0.45);
+  box-shadow: 0 4px 18px rgba(56, 189, 248, 0.18);
+}
+
 .welcome__cta:hover {
   transform: translateY(-2px);
   box-shadow: 0 10px 32px rgba(46, 204, 113, 0.45);
@@ -161,6 +179,11 @@ const welcomeBalls = [
 .welcome__cta--resume:hover {
   background: rgba(46, 204, 113, 0.15);
   box-shadow: 0 8px 24px rgba(46, 204, 113, 0.3);
+}
+
+.welcome__cta--history:hover {
+  background: rgba(56, 189, 248, 0.15);
+  box-shadow: 0 8px 24px rgba(56, 189, 248, 0.24);
 }
 
 .welcome__cta:active {

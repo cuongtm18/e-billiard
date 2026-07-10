@@ -1,9 +1,17 @@
 <script setup lang="ts">
+const props = defineProps<{
+  sharing?: boolean
+}>()
+
 const emit = defineEmits<{
   share: []
+  export: []
   import: []
+  history: []
   reset: []
 }>()
+
+const { hasHistory } = useGameHistory()
 
 const open = ref(false)
 const menuRef = ref<HTMLElement | null>(null)
@@ -21,9 +29,19 @@ function onShare() {
   emit('share')
 }
 
+function onExport() {
+  closeMenu()
+  emit('export')
+}
+
 function onImport() {
   closeMenu()
   emit('import')
+}
+
+function onHistory() {
+  closeMenu()
+  emit('history')
 }
 
 function onReset() {
@@ -66,11 +84,29 @@ onUnmounted(() => {
     </button>
 
     <div v-if="open" class="game-menu__dropdown" role="menu">
-      <button type="button" class="game-menu__item" role="menuitem" @click="onShare">
-        Share game
+      <button
+        type="button"
+        class="game-menu__item"
+        role="menuitem"
+        :disabled="sharing"
+        @click="onShare"
+      >
+        {{ sharing ? 'Sharing...' : 'Share' }}
+      </button>
+      <button type="button" class="game-menu__item" role="menuitem" @click="onExport">
+        Export game
       </button>
       <button type="button" class="game-menu__item" role="menuitem" @click="onImport">
         Import game
+      </button>
+      <button
+        type="button"
+        class="game-menu__item"
+        role="menuitem"
+        :disabled="!hasHistory"
+        @click="onHistory"
+      >
+        History
       </button>
       <button type="button" class="game-menu__item game-menu__item--danger" role="menuitem" @click="onReset">
         Reset game
@@ -141,16 +177,21 @@ onUnmounted(() => {
   transition: background 0.15s, color 0.15s;
 }
 
-.game-menu__item:hover {
+.game-menu__item:hover:not(:disabled) {
   background: rgba(255, 255, 255, 0.1);
   color: white;
+}
+
+.game-menu__item:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 .game-menu__item--danger {
   color: #f87171;
 }
 
-.game-menu__item--danger:hover {
+.game-menu__item--danger:hover:not(:disabled) {
   background: rgba(248, 113, 113, 0.12);
   color: #fca5a5;
 }

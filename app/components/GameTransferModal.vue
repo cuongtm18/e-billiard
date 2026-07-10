@@ -17,7 +17,7 @@ const scannerContainerId = 'game-transfer-scanner'
 let scanner: import('html5-qrcode').Html5Qrcode | null = null
 
 watch([modalOpen, modalMode, exportCode], async ([open, mode, code]) => {
-  if (!open || mode !== 'share' || !code) {
+  if (!open || mode !== 'export' || !code) {
     qrDataUrl.value = ''
     return
   }
@@ -110,13 +110,13 @@ onUnmounted(() => {
       class="transfer-modal"
       role="dialog"
       aria-modal="true"
-      :aria-label="modalMode === 'share' ? 'Share game' : 'Import game'"
+      :aria-label="modalMode === 'export' ? 'Export game' : 'Import game'"
       @click.self="closeTransferModal"
     >
       <div class="transfer-modal__panel">
         <header class="transfer-modal__header">
           <h2 class="transfer-modal__title">
-            {{ modalMode === 'share' ? 'Share game' : 'Import game' }}
+            {{ modalMode === 'export' ? 'Export game' : 'Import game' }}
           </h2>
           <button
             type="button"
@@ -128,7 +128,7 @@ onUnmounted(() => {
           </button>
         </header>
 
-        <div v-if="modalMode === 'share'" class="transfer-modal__body">
+        <div v-if="modalMode === 'export'" class="transfer-modal__body">
           <div v-if="qrDataUrl" class="transfer-modal__qr-wrap">
             <img :src="qrDataUrl" alt="QR code game" class="transfer-modal__qr">
           </div>

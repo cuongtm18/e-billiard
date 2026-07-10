@@ -3,12 +3,20 @@ import type { BallValue, PlayerBlock } from '~/types/game'
 import { BALL_POINTS } from '~/types/game'
 const props = defineProps<{
   block: PlayerBlock
-  isSelected: boolean
-  canClickBalls: boolean
-  canToggleDouble: boolean
-  selectedCount: number
-  showMinusHint: boolean
+  isSelected?: boolean
+  canClickBalls?: boolean
+  canToggleDouble?: boolean
+  selectedCount?: number
+  showMinusHint?: boolean
+  readonly?: boolean
 }>()
+
+const isReadonly = computed(() => props.readonly === true)
+const isSelected = computed(() => !isReadonly.value && (props.isSelected ?? false))
+const canClickBalls = computed(() => !isReadonly.value && (props.canClickBalls ?? false))
+const canToggleDouble = computed(() => !isReadonly.value && (props.canToggleDouble ?? false))
+const selectedCount = computed(() => props.selectedCount ?? 0)
+const showMinusHint = computed(() => !isReadonly.value && (props.showMinusHint ?? false))
 
 const emit = defineEmits<{
   'score': [ball: BallValue]
@@ -61,7 +69,7 @@ function commitTitle() {
 }
 
 function onBlockSelect() {
-  if (isEditingTitle.value) return
+  if (isReadonly.value || isEditingTitle.value) return
   emit('toggle-select')
 }
 
@@ -75,7 +83,10 @@ function onBallsAreaClick(event: MouseEvent) {
 <template>
   <article
     class="score-block"
-    :class="{ 'score-block--selected': isSelected }"
+    :class="{
+      'score-block--selected': isSelected,
+      'score-block--readonly': isReadonly,
+    }"
     @click="onBlockSelect"
   >
     <span v-if="isSelected" class="score-block__ring" aria-hidden="true" />
@@ -97,7 +108,7 @@ function onBallsAreaClick(event: MouseEvent) {
             {{ block.title }}
           </span>
           <button
-            v-if="!isEditingTitle"
+            v-if="!isEditingTitle && !isReadonly"
             type="button"
             class="score-block__edit-btn"
             title="Edit"
@@ -109,7 +120,7 @@ function onBallsAreaClick(event: MouseEvent) {
         </div>
       </div>
 
-      <div class="score-block__header-end">
+      <div v-if="!isReadonly" class="score-block__header-end">
         <button
           type="button"
           class="score-block__double"
@@ -130,6 +141,7 @@ function onBallsAreaClick(event: MouseEvent) {
     </header>
 
     <button
+      v-if="!isReadonly"
       type="button"
       class="score-block__lag"
       title="Lag (+24 / −12 for each other player)"
@@ -163,6 +175,7 @@ function onBallsAreaClick(event: MouseEvent) {
     </div>
 
     <div
+      v-if="!isReadonly"
       class="score-block__balls"
       :class="{ 'score-block__balls--locked': !canClickBalls }"
       @click="onBallsAreaClick"
@@ -247,6 +260,11 @@ function onBallsAreaClick(event: MouseEvent) {
     border-color: var(--select);
     box-shadow: 0 0 6px rgba(245, 197, 24, 0.28);
   }
+}
+
+.score-block--readonly {
+  cursor: default;
+  padding-bottom: 1rem;
 }
 
 .score-block__header {
@@ -468,6 +486,12 @@ function onBallsAreaClick(event: MouseEvent) {
     border-radius: 10px;
     border-width: 1.5px;
     align-content: center;
+  }
+
+  .score-block--readonly {
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 0.45rem;
   }
 
   .score-block__header {

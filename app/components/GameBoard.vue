@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import type { BallValue } from '~/types/game'
 
+const boardRef = ref<HTMLElement | null>(null)
+
 const {
   blocks,
   selectedBlockIds,
@@ -16,11 +18,17 @@ const {
   goHome,
 } = useGame()
 
-const { openShareModal, openImportModal } = useGameTransfer()
+const { openExportModal, openImportModal } = useGameTransfer()
+const { openHistoryModal } = useGameHistory()
+const { isSharing, shareError, shareBoardScreenshot } = useGameShare()
+
+async function handleShareScreenshot() {
+  await shareBoardScreenshot(boardRef.value)
+}
 </script>
 
 <template>
-  <div class="game-board">
+  <div ref="boardRef" class="game-board">
     <header class="game-board__toolbar">
       <button type="button" class="btn btn--ghost" @click="goHome">
         ← Home
@@ -28,8 +36,11 @@ const { openShareModal, openImportModal } = useGameTransfer()
 
       <div class="game-board__toolbar-center">
         <GameMenuDropdown
-          @share="openShareModal"
+          :sharing="isSharing"
+          @share="handleShareScreenshot"
+          @export="openExportModal"
           @import="openImportModal"
+          @history="openHistoryModal"
           @reset="resetGame"
         />
       </div>
@@ -50,6 +61,10 @@ const { openShareModal, openImportModal } = useGameTransfer()
         </svg>
       </button>
     </header>
+
+    <p v-if="shareError" class="game-board__share-error">
+      {{ shareError }}
+    </p>
 
     <div class="game-board__blocks">
       <ScoreBlock
@@ -87,6 +102,14 @@ const { openShareModal, openImportModal } = useGameTransfer()
   flex-wrap: wrap;
 }
 
+.game-board__share-error {
+  margin: -1.25rem 0 1rem;
+  text-align: center;
+  color: #ff8a7a;
+  font-size: 0.86rem;
+  font-weight: 600;
+}
+
 .game-board__blocks {
   display: flex;
   flex-direction: column;
@@ -104,6 +127,11 @@ const { openShareModal, openImportModal } = useGameTransfer()
   .game-board__toolbar {
     margin-bottom: 0.35rem;
     gap: 0.35rem;
+    flex-shrink: 0;
+  }
+
+  .game-board__share-error {
+    margin: 0 0 0.35rem;
     flex-shrink: 0;
   }
 
