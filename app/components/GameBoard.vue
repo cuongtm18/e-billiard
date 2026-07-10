@@ -7,7 +7,6 @@ const {
   blocks,
   selectedBlockIds,
   updateTitle,
-  toggleDouble,
   toggleBlockSelection,
   canScoreBalls,
   scoreBall,
@@ -73,13 +72,9 @@ async function handleShareScreenshot() {
         :block="block"
         :is-selected="selectedBlockIds.includes(block.id)"
         :can-click-balls="canScoreBalls && selectedBlockIds.includes(block.id)"
-        :can-toggle-double="canScoreBalls"
-        :selected-count="selectedBlockIds.length"
-        :show-minus-hint="canScoreBalls"
         @toggle-select="toggleBlockSelection(block.id)"
-        @score="(ball: BallValue) => scoreBall(index, ball)"
+        @score="(ball: BallValue, doubled: boolean) => scoreBall(index, ball, doubled)"
         @lag="scoreLag(index)"
-        @toggle-double="toggleDouble(block.id)"
         @update-title="(title: string) => updateTitle(block.id, title)"
       />
     </div>

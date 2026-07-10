@@ -1,48 +1,26 @@
 <script setup lang="ts">
 import type { BallValue, PlayerBlock } from '~/types/game'
-import { BALL_POINTS } from '~/types/game'
 const props = defineProps<{
   block: PlayerBlock
   isSelected?: boolean
   canClickBalls?: boolean
-  canToggleDouble?: boolean
-  selectedCount?: number
-  showMinusHint?: boolean
   readonly?: boolean
 }>()
 
 const isReadonly = computed(() => props.readonly === true)
 const isSelected = computed(() => !isReadonly.value && (props.isSelected ?? false))
 const canClickBalls = computed(() => !isReadonly.value && (props.canClickBalls ?? false))
-const canToggleDouble = computed(() => !isReadonly.value && (props.canToggleDouble ?? false))
-const selectedCount = computed(() => props.selectedCount ?? 0)
-const showMinusHint = computed(() => !isReadonly.value && (props.showMinusHint ?? false))
 
 const emit = defineEmits<{
-  'score': [ball: BallValue]
+  'score': [ball: BallValue, doubled: boolean]
   'toggle-select': []
-  'toggle-double': []
   'lag': []
   'update-title': [title: string]
 }>()
 
-function onBallClick(ball: BallValue) {
-  if (!props.canClickBalls) return
-  emit('score', ball)
-}
-
-function onToggleDouble() {
-  if (!props.canToggleDouble) return
-  emit('toggle-double')
-}
-
-function ballPoints(ball: BallValue) {
-  const base = BALL_POINTS[ball]
-  return props.block.doublePoints ? base * 2 : base
-}
-
-function ballGain(ball: BallValue) {
-  return ballPoints(ball) * Math.max(0, props.selectedCount - 1)
+function onBallScore(ball: BallValue, doubled: boolean) {
+  if (!canClickBalls.value) return
+  emit('score', ball, doubled)
 }
 
 const balls: BallValue[] = [3, 6, 9]
@@ -119,25 +97,6 @@ function onBallsAreaClick(event: MouseEvent) {
           </button>
         </div>
       </div>
-
-      <div v-if="!isReadonly" class="score-block__header-end">
-        <button
-          type="button"
-          class="score-block__double"
-          :class="{ 'score-block__double--active': block.doublePoints }"
-          :disabled="!canToggleDouble"
-          :title="canToggleDouble
-            ? (block.doublePoints ? 'Turn off double points' : 'Turn on double points')
-            : 'Select at least 2 players first'"
-          :aria-label="canToggleDouble
-            ? (block.doublePoints ? 'Turn off double points' : 'Turn on double points')
-            : 'Select at least 2 players first'"
-          :aria-pressed="block.doublePoints"
-          @click.stop="onToggleDouble"
-        >
-          x2
-        </button>
-      </div>
     </header>
 
     <button
@@ -183,16 +142,15 @@ function onBallsAreaClick(event: MouseEvent) {
       <div v-for="ball in balls" :key="ball" class="score-block__ball-group">
         <BilliardBall
           :value="ball"
-          :doubled="block.doublePoints"
           :disabled="!canClickBalls"
-          @click="onBallClick(ball)"
+          @score="(doubled: boolean) => onBallScore(ball, doubled)"
         />
-        <span class="score-block__ball-points">
-          +{{ ballGain(ball) }}
-          <template v-if="canClickBalls && showMinusHint"> / −{{ ballPoints(ball) }}</template>
-        </span>
       </div>
     </div>
+
+    <p v-if="canClickBalls" class="score-block__gesture-hint">
+      Tap for normal · Hold & swipe up for ×2
+    </p>
   </article>
 </template>
 
@@ -284,12 +242,8 @@ function onBallsAreaClick(event: MouseEvent) {
 
 .score-block__header-start {
   flex: 1;
-  justify-content: flex-start;
-}
-
-.score-block__header-end {
-  flex-shrink: 0;
-  justify-content: flex-end;
+  justify-content: center;
+  width: 100%;
 }
 
 .score-block__title-wrap {
@@ -390,10 +344,16 @@ function onBallsAreaClick(event: MouseEvent) {
   gap: 0.35rem;
 }
 
-.score-block__ball-points {
-  font-size: 1.5rem;
-  color: rgba(255, 255, 255, 0.55);
+.score-block__gesture-hint {
+  margin: 0;
+  width: 100%;
+  text-align: center;
+  font-size: 0.72rem;
   font-weight: 600;
+  color: rgba(255, 255, 255, 0.38);
+  letter-spacing: 0.01em;
+  user-select: none;
+  pointer-events: none;
 }
 
 .score-block__lag {
@@ -435,42 +395,6 @@ function onBallsAreaClick(event: MouseEvent) {
 
 .score-block__lag-runner-head {
   fill: #1a2e1a;
-}
-
-.score-block__double {
-  flex-shrink: 0;
-  min-width: 3.5rem;
-  height: 3.5rem;
-  padding: 0 1rem;
-  background: rgba(255, 255, 255, 0.08);
-  border: 2px solid rgba(255, 255, 255, 0.22);
-  color: rgba(255, 255, 255, 0.75);
-  border-radius: 24px;
-  font-size: 1.25rem;
-  font-weight: 800;
-  line-height: 1;
-  cursor: pointer;
-  transition: background 0.15s, border-color 0.15s, color 0.15s, box-shadow 0.15s;
-  letter-spacing: 0.02em;
-}
-
-.score-block__double:hover:not(:disabled):not(.score-block__double--active) {
-  background: rgba(255, 255, 255, 0.14);
-  border-color: rgba(255, 255, 255, 0.35);
-  color: white;
-}
-
-.score-block__double:disabled {
-  opacity: 0.35;
-  cursor: not-allowed;
-}
-
-.score-block__double--active,
-.score-block__double--active:hover:not(:disabled) {
-  background: #ff6b35;
-  border-color: #ff8c5a;
-  color: white;
-  box-shadow: 0 0 10px rgba(255, 107, 53, 0.45);
 }
 
 @media (max-width: 640px) {
@@ -548,8 +472,10 @@ function onBallsAreaClick(event: MouseEvent) {
     gap: 0.15rem;
   }
 
-  .score-block__ball-points {
-    font-size: 0.8rem;
+  .score-block__gesture-hint {
+    grid-column: 1 / -1;
+    font-size: 0.62rem;
+    margin-top: -0.1rem;
   }
 
   .score-block__lag {
@@ -563,15 +489,6 @@ function onBallsAreaClick(event: MouseEvent) {
   .score-block__lag-icon {
     width: 1.1rem;
     height: 1.1rem;
-  }
-
-  .score-block__double {
-    min-width: 3.25rem;
-    height: 3.25rem;
-    padding: 0 0.85rem;
-    font-size: 1.15rem;
-    border-radius: 20px;
-    border-width: 2px;
   }
 }
 </style>

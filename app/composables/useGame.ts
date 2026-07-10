@@ -101,13 +101,6 @@ export function useGame() {
     }
   }
 
-  function toggleDouble(id: string) {
-    if (selectedBlockIds.value.length < MIN_SELECTED_BLOCKS) return
-
-    const block = blocks.value.find(b => b.id === id)
-    if (block) block.doublePoints = !block.doublePoints
-  }
-
   function toggleBlockSelection(id: string) {
     if (!blocks.value.some(b => b.id === id)) return
 
@@ -124,7 +117,7 @@ export function useGame() {
     selectedBlockIds.value = []
   }
 
-  function scoreBall(blockIndex: number, ball: BallValue) {
+  function scoreBall(blockIndex: number, ball: BallValue, doubled = false) {
     if (selectedBlockIds.value.length < MIN_SELECTED_BLOCKS) return
 
     const current = blocks.value[blockIndex]
@@ -135,9 +128,8 @@ export function useGame() {
       ? history.slice(-MAX_SCORE_HISTORY)
       : history
 
-    const wasDoubled = current.doublePoints
     let points = BALL_POINTS[ball]
-    if (wasDoubled) points *= 2
+    if (doubled) points *= 2
 
     const selectedIds = new Set(selectedBlockIds.value)
     const otherSelectedCount = selectedBlockIds.value.length - 1
@@ -148,10 +140,6 @@ export function useGame() {
       if (block.id !== current.id && selectedIds.has(block.id)) {
         block.score -= points
       }
-    }
-
-    for (const block of blocks.value) {
-      block.doublePoints = false
     }
 
     clearBlockSelection()
@@ -245,7 +233,6 @@ export function useGame() {
     resumeGame,
     removeBlock,
     updateTitle,
-    toggleDouble,
     toggleBlockSelection,
     clearBlockSelection,
     scoreBall,
